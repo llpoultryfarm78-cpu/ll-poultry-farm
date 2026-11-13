@@ -1,0 +1,14 @@
+const $=id=>document.getElementById(id),KEY="llpf_api";
+const base=()=>($("api").value||localStorage.getItem(KEY)||"").trim().replace(/\/+$/,"");
+$("api").value=localStorage.getItem(KEY)||"";
+function msg(s){$("status").textContent=s}
+async function req(path,opt={}){if(!base())throw Error("Enter and save your Worker API URL first.");const r=await fetch(base()+path,opt),d=await r.json().catch(()=>({error:"Unexpected response"}));if(!r.ok)throw Error(d.error||"Request failed");return d}
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+$("save").onclick=()=>{localStorage.setItem(KEY,base());msg("Connection saved on this device.");load()};
+function clear(){ $("form").reset();$("id").value="" } $("clear").onclick=clear;
+async function load(){if(!base())return;try{const d=await req("/api/content");$("announcement").value=d.announcement||"";$("list").innerHTML=(d.products||[]).map(p=>`<div class="item">${p.image_url?`<img src="${esc(p.image_url)}" alt="">`:""}<h3>${esc(p.name)}</h3><p>${esc(p.category)} · ${esc(p.availability)}</p><p>${p.price_ksh==null?"Ask for price":"KSh "+esc(p.price_ksh)}</p><p>${esc(p.description)}</p><button data-edit="${esc(p.id)}">Edit</button><button class="secondary" data-del="${esc(p.id)}">Delete</button></div>`).join("")||"No listings yet.";document.querySelectorAll("[data-edit]").forEach(b=>b.onclick=()=>edit((d.products||[]).find(p=>p.id===b.dataset.edit)));document.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>del(b.dataset.del));msg("Listings loaded.")}catch(e){msg(e.message)}}
+function edit(p){$("id").value=p.id;$("name").value=p.name;$("category").value=p.category;$("price").value=p.price_ksh??"";$("availability").value=p.availability;$("description").value=p.description||"";scrollTo(0,0)}
+async function del(id){if(!confirm("Delete this listing?"))return;try{await req("/api/admin/products/"+id,{method:"DELETE"});load()}catch(e){msg(e.message)}}
+$("form").onsubmit=async e=>{e.preventDefault();try{let image_url="";const f=$("photo").files[0];if(f){const fd=new FormData();fd.append("file",f);image_url=(await req("/api/admin/images",{method:"POST",body:fd})).url}const b={name:$("name").value.trim(),category:$("category").value,price_ksh:$("price").value===""?null:Number($("price").value),availability:$("availability").value,description:$("description").value.trim()};if(image_url)b.image_url=image_url;const id=$("id").value;await req(id?"/api/admin/products/"+id:"/api/admin/products",{method:id?"PUT":"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(b)});clear();msg("Listing saved.");load()}catch(e){msg(e.message)}};
+$("publish").onclick=async()=>{try{await req("/api/admin/announcement",{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({announcement:$("announcement").value.trim()})});msg("Announcement published.")}catch(e){msg(e.message)}};
+load();

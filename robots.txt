@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://ll-poultry-farm.pages.dev/sitemap.xml

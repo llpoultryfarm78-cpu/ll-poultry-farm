@@ -1,0 +1,15 @@
+name = "ll-poultry-farm-api"
+main = "src/index.js"
+compatibility_date = "2026-11-01"
+[[d1_databases]]
+binding = "DB"
+database_name = "ll-poultry-farm-db"
+database_id = "REPLACE_WITH_D1_DATABASE_ID"
+[[r2_buckets]]
+binding = "IMAGES"
+bucket_name = "ll-poultry-farm-images"
+[vars]
+ALLOWED_ADMIN_EMAIL = "llpoultryfarm78@gmail.com"
+ACCESS_CERTS_URL = "https://REPLACE_WITH_TEAM.cloudflareaccess.com/cdn-cgi/access/certs"
+ACCESS_AUD = "REPLACE_WITH_ACCESS_APPLICATION_AUD"
+PUBLIC_IMAGE_BASE_URL = "https://REPLACE_WITH_PUBLIC_IMAGE_HOST"
